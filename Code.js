@@ -5,7 +5,12 @@
 
 function doGet(e) {
   const template = HtmlService.createTemplateFromFile('Index');
-  template.userEmail = Session.getActiveUser().getEmail();
+  
+  // Ambil email dari parameter URL (berguna untuk MIT App Inventor / WebView)
+  // Contoh: .../exec?email=user@gmail.com
+  let emailParam = e.parameter.email || "";
+  template.userEmail = emailParam || Session.getActiveUser().getEmail() || "";
+  
   return template.evaluate()
     .setTitle('StudyCore')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
