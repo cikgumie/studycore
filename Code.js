@@ -4,38 +4,12 @@
  */
 
 function doGet(e) {
-  // Handle API requests via GET (for JSONP/CORS bypass)
-  if (e.parameter.action) {
-    const result = api(e.parameter.action, JSON.parse(e.parameter.payload || "null"), e.parameter.email);
-    if (e.parameter.callback) {
-      return ContentService.createTextOutput(e.parameter.callback + "(" + result + ")")
-        .setMimeType(ContentService.MimeType.JAVASCRIPT);
-    }
-    return ContentService.createTextOutput(result)
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-
-  return HtmlService.createTemplateFromFile('index').evaluate()
+  const template = HtmlService.createTemplateFromFile('Index');
+  template.userEmail = Session.getActiveUser().getEmail();
+  return template.evaluate()
     .setTitle('StudyCore')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-}
-
-/**
- * Handle API requests from external sources (e.g. GitHub Pages)
- */
-function doPost(e) {
-  try {
-    const params = JSON.parse(e.postData.contents);
-    const result = api(params.action, params.payload, params.email);
-    return ContentService.createTextOutput(result)
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    return ContentService.createTextOutput(JSON.stringify({
-      success: false,
-      message: "CORS/API Error: " + err.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
 }
 
 function include(filename) {
