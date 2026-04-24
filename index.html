@@ -6,7 +6,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Archivo+Black&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/png" href="logo.png">
     <script>
         tailwind.config = {
             theme: {
@@ -35,7 +34,7 @@
     <header class="p-6 flex justify-between items-center">
         <div class="flex items-center gap-3">
             <div class="w-12 h-12 bg-white border-2 border-black rounded-2xl flex items-center justify-center neo-brutalism p-1 overflow-hidden">
-                <img src="logo.png" alt="Logo" class="w-full h-full object-contain">
+                <img src="https://api.dicebear.com/7.x/shapes/svg?seed=StudyCore&backgroundColor=a855f7,06b6d4" alt="Logo" class="w-full h-full object-contain">
             </div>
             <div>
                 <h1 class="text-2xl font-900 tracking-tighter" style="font-family: 'Archivo Black', sans-serif;">STUDY<span class="text-pop-purple">CORE</span></h1>
@@ -249,58 +248,6 @@
             prompt(text, title) { return this.show('prompt', text, title); }
         };
 
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyOpWhUqHjK8W3pOKgtKlshAhBiWRuqfEvvEDFqDgVSGWHVszp1XA180sH7WXB9brV5YA/exec";
-
-        // JSONP Helper for CORS bypass (for GET requests)
-        function fetchJSONP(url, callbackName) {
-            return new Promise((resolve, reject) => {
-                const script = document.createElement('script');
-                const name = 'jsonp_' + Math.round(100000 * Math.random());
-                window[name] = (data) => {
-                    resolve(data);
-                    document.body.removeChild(script);
-                    delete window[name];
-                };
-                script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + name;
-                script.onerror = () => {
-                    reject(new Error('JSONP failed'));
-                    document.body.removeChild(script);
-                    delete window[name];
-                };
-                document.body.appendChild(script);
-            });
-        }
-
-        async function runBackend(action, payload = null) {
-            const email = getEmail();
-            if (!email) return { success: false, message: "Email diperlukan" };
-
-            // For GET actions (loading data), use JSONP to bypass CORS
-            if (action === 'GET_USER_DATA') {
-                const url = `${WEB_APP_URL}?action=${action}&email=${encodeURIComponent(email)}&payload=${encodeURIComponent(JSON.stringify(payload))}`;
-                try {
-                    return await fetchJSONP(url);
-                } catch (e) {
-                    return { success: false, message: "Gagal memuat data (CORS): " + e.message };
-                }
-            }
-
-            // For POST actions (saving), use no-cors fetch (we won't be able to read response, but GAS will process it)
-            try {
-                fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ action, payload, email }),
-                    headers: { 'Content-Type': 'text/plain' }
-                });
-                // Since we can't read response in no-cors, we wait a bit and return success
-                return new Promise(resolve => setTimeout(() => resolve({ success: true }), 1000));
-            } catch (err) {
-                console.error("API Error:", err);
-                return { success: false, message: "Ralat sambungan API: " + err.message };
-            }
-        }
-
         let GD = {}; 
         const DAYS_LIST = ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu', 'Ahad'];
         const dayNames = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
@@ -308,15 +255,18 @@
 
         window.onload = () => {
             let email = localStorage.getItem('userEmail');
+            const detectedEmail = "<?= userEmail ?>";
+            
+            if (!email && detectedEmail) {
+                email = detectedEmail;
+                localStorage.setItem('userEmail', email);
+            }
+            
             if (email) {
                 document.getElementById('in-email').value = email;
-                lucide.createIcons();
-                loadData();
-            } else {
-                lucide.createIcons();
-                switchTab('setup');
-                Dialog.alert('Selamat Datang ke StudyCore! Sila masukkan email Google anda di bahagian Tetapan untuk memuatkan data anda.', 'StudyCore');
             }
+            lucide.createIcons();
+            loadData();
         };
 
         function switchTab(tabId) {
@@ -345,17 +295,27 @@
             return document.getElementById('in-email').value.trim().toLowerCase();
         }
 
-        async function loadData() {
+        function loadData() {
             const email = getEmail();
             if (!email) return;
             
-            const res = await runBackend('GET_USER_DATA');
-            if (res && res.success) {
-                GD = res.data;
-                renderDashboard();
-            } else {
-                Dialog.alert('Gagal memuat data: ' + (res ? res.message : 'Unknown error'));
-            }
+            google.script.run
+                .withSuccessHandler(rawRes => {
+                    try {
+                        const res = JSON.parse(rawRes);
+                        if (res && res.success) {
+                            GD = res.data;
+                            renderDashboard();
+                        } else {
+                            const errorMsg = res ? res.message : 'Gagal memproses data';
+                            Dialog.alert('Gagal memuat data: ' + errorMsg);
+                        }
+                    } catch (e) {
+                        Dialog.alert('Ralat Data: ' + e.message);
+                    }
+                })
+                .withFailureHandler(err => Dialog.alert('Ralat Sistem: ' + err.message))
+                .api('GET_USER_DATA', null, email);
         }
 
         function renderDashboard() {
@@ -598,26 +558,34 @@
             lucide.createIcons();
         }
 
-        async function openScoreUpdate(id, name) {
-            const score = await Dialog.prompt(`Masukkan markah baru untuk ${name} (0-100):`);
-            if (score === null || score === "") return;
-            
-            const numScore = parseInt(score);
-            if (isNaN(numScore) || numScore < 0 || numScore > 100) {
-                Dialog.alert('Sila masukkan nombor antara 0 hingga 100!');
-                return;
-            }
+        function openScoreUpdate(id, name) {
+            Dialog.prompt(`Masukkan markah baru untuk ${name} (0-100):`).then(score => {
+                if (score === null || score === "") return;
+                
+                const numScore = parseInt(score);
+                if (isNaN(numScore) || numScore < 0 || numScore > 100) {
+                    Dialog.alert('Sila masukkan nombor antara 0 hingga 100!');
+                    return;
+                }
 
-            const res = await runBackend('UPDATE_SUBJECT_SCORE', { subjId: id, score: numScore });
-            if (res && res.success) {
-                Dialog.alert('Markah berjaya dikemaskini!');
-                loadData();
-            } else {
-                Dialog.alert('Gagal kemaskini: ' + (res ? res.message : 'Ralat API'));
-            }
+                google.script.run
+                    .withSuccessHandler(rawRes => {
+                        try {
+                            const res = JSON.parse(rawRes);
+                            if (res && res.success) {
+                                Dialog.alert('Markah berjaya dikemaskini!');
+                                loadData();
+                            } else {
+                                Dialog.alert('Gagal kemaskini: ' + res.message);
+                            }
+                        } catch (e) { Dialog.alert(e.message); }
+                    })
+                    .withFailureHandler(err => Dialog.alert(err.message))
+                    .api('UPDATE_SUBJECT_SCORE', { subjId: id, score: numScore }, getEmail());
+            });
         }
 
-        async function saveSettings() {
+        function saveSettings() {
             const email = getEmail();
             if (!email) {
                 Dialog.alert('Sila masukkan email dahulu!');
@@ -631,16 +599,24 @@
                 subjects: document.getElementById('in-subjday').value,
                 thumbnail: document.getElementById('in-thumbnail').value
             };
-            
-            const res = await runBackend('SAVE_SETTINGS', payload);
-            if (res && res.success) {
-                Dialog.alert('Profil Disimpan!');
-            } else {
-                Dialog.alert('Gagal simpan profil: ' + (res ? res.message : 'Ralat API'));
-            }
+            google.script.run
+                .withSuccessHandler(rawRes => {
+                    try {
+                        const res = JSON.parse(rawRes);
+                        if (res && res.success) {
+                            Dialog.alert('Profil Disimpan!');
+                        } else {
+                            Dialog.alert('Gagal simpan profil: ' + (res ? res.message : 'Gagal memproses'));
+                        }
+                    } catch (e) {
+                        Dialog.alert('Ralat Data: ' + e.message);
+                    }
+                })
+                .withFailureHandler(err => Dialog.alert('Ralat Sistem: ' + err.message))
+                .api('SAVE_SETTINGS', payload, email);
         }
 
-        async function addSubject(btn) {
+        function addSubject(btn) {
             if (!btn) btn = document.getElementById('btn-add-subject');
             const originalText = btn.innerText;
             
@@ -667,21 +643,34 @@
 
             const action = payload.id ? 'EDIT_SUBJECT' : 'ADD_SUBJECT';
 
-            const res = await runBackend(action, payload);
-            btn.innerText = originalText;
-            btn.disabled = false;
-            btn.classList.remove('opacity-50');
-            
-            if (res && res.success) {
-                nameEl.value = "";
-                currentEl.value = "";
-                targetEl.value = "";
-                editIdEl.value = "";
-                closeSubjectModal();
-                loadData();
-            } else {
-                Dialog.alert('Gagal simpan subjek: ' + (res ? res.message : 'Ralat API'));
-            }
+            google.script.run
+                .withSuccessHandler(rawRes => {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50');
+                    try {
+                        const res = JSON.parse(rawRes);
+                        if (res && res.success) {
+                            nameEl.value = "";
+                            currentEl.value = "";
+                            targetEl.value = "";
+                            editIdEl.value = "";
+                            closeSubjectModal();
+                            loadData();
+                        } else {
+                            Dialog.alert('Gagal simpan subjek: ' + (res ? res.message : 'Gagal memproses'));
+                        }
+                    } catch (e) {
+                        Dialog.alert('Ralat Data: ' + e.message);
+                    }
+                })
+                .withFailureHandler(err => {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50');
+                    Dialog.alert('Ralat Sistem: ' + err.message);
+                })
+                .api(action, payload, getEmail());
         }
 
         function startEditSubject(id, name, current, target) {
@@ -722,40 +711,64 @@
         }
 
         function confirmDeleteSubject(id, name, btn) {
-            Dialog.confirm(`Adakah anda pasti ingin menghapus subjek "${name}"? Semua jadual berkaitan subjek ini juga akan dipadam.`).then(async confirmed => {
+            Dialog.confirm(`Adakah anda pasti ingin menghapus subjek "${name}"? Semua jadual berkaitan subjek ini juga akan dipadam.`).then(confirmed => {
                 if (!confirmed) return;
                 if (btn) {
                     btn.disabled = true;
                     btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-red-500"></i>';
                     lucide.createIcons();
                 }
-                
-                const res = await runBackend('DELETE_SUBJECT', {id: id});
-                if (res && res.success) {
-                    loadData();
-                } else {
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>';
-                        lucide.createIcons();
-                    }
-                    Dialog.alert('Gagal hapus subjek: ' + (res ? res.message : 'Ralat API'));
-                }
+                google.script.run
+                    .withSuccessHandler(rawRes => {
+                        try {
+                            const res = JSON.parse(rawRes);
+                            if (res && res.success) {
+                                loadData();
+                            } else {
+                                if (btn) {
+                                    btn.disabled = false;
+                                    btn.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>';
+                                    lucide.createIcons();
+                                }
+                                Dialog.alert('Gagal hapus subjek: ' + (res ? res.message : 'Gagal memproses'));
+                            }
+                        } catch (e) {
+                            Dialog.alert('Ralat Data: ' + e.message);
+                        }
+                    })
+                    .withFailureHandler(err => {
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>';
+                            lucide.createIcons();
+                        }
+                        Dialog.alert('Ralat Sistem: ' + err.message);
+                    })
+                    .api('DELETE_SUBJECT', {id: id}, getEmail());
             });
         }
 
-        async function generateSchedule() {
+        function generateSchedule() {
             const email = getEmail();
             if (!email) return Dialog.alert('Sila masukkan email!');
             
-            const res = await runBackend('GENERATE_SCHEDULE');
-            if (res && res.success) {
-                Dialog.alert(res.message);
-                loadData();
-                switchTab('dashboard');
-            } else {
-                Dialog.alert('Gagal jana jadual: ' + (res ? res.message : 'Ralat API'));
-            }
+            google.script.run
+                .withSuccessHandler(rawRes => {
+                    try {
+                        const res = JSON.parse(rawRes);
+                        if (res && res.success) {
+                            Dialog.alert(res.message);
+                            loadData();
+                            switchTab('dashboard');
+                        } else {
+                            Dialog.alert('Gagal jana jadual: ' + (res ? res.message : 'Gagal memproses'));
+                        }
+                    } catch (e) {
+                        Dialog.alert('Ralat Data: ' + e.message);
+                    }
+                })
+                .withFailureHandler(err => Dialog.alert('Ralat Sistem: ' + err.message))
+                .api('GENERATE_SCHEDULE', null, email);
         }
 
         function switchDay(day) {
@@ -763,15 +776,22 @@
             renderDashboard();
         }
 
-        async function markDone(id, btn) {
+        function markDone(id, btn) {
             if (btn && !btn.innerHTML.includes('check')) {
                 btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>';
                 lucide.createIcons();
             }
-            const res = await runBackend('UPDATE_STATUS', {id: id});
-            if (res && res.success) {
-                loadData();
-            }
+            google.script.run
+                .withSuccessHandler(rawRes => {
+                    try {
+                        const res = JSON.parse(rawRes);
+                        if (res && res.success) {
+                            loadData();
+                        }
+                    } catch (e) {}
+                })
+                .withFailureHandler(err => console.error(err))
+                .api('UPDATE_STATUS', {id: id}, getEmail());
         }
 
         function handleFileUpload(input) {
@@ -784,7 +804,7 @@
             statusEl.classList.remove('hidden');
             statusEl.innerText = "Sedang memuat naik...";
             
-            reader.onload = async function(e) {
+            reader.onload = function(e) {
                 const base64 = e.target.result;
                 const payload = {
                     base64: base64,
@@ -792,22 +812,34 @@
                     mimeType: file.type
                 };
 
-                const res = await runBackend('UPLOAD_PROFILE_IMAGE', payload);
-                statusEl.classList.add('hidden');
-                if (res && res.success) {
-                    document.getElementById('in-thumbnail').value = res.url;
-                    
-                    // Update Header Preview
-                    const thumbImg = document.getElementById('user-thumbnail');
-                    const thumbIcon = document.getElementById('user-icon');
-                    thumbImg.src = res.url;
-                    thumbImg.classList.remove('hidden');
-                    thumbIcon.classList.add('hidden');
-                    
-                    Dialog.alert('Gambar berjaya dimuat naik ke Drive!');
-                } else {
-                    Dialog.alert('Gagal muat naik: ' + (res ? res.message : 'Ralat API'));
-                }
+                google.script.run
+                    .withSuccessHandler(rawRes => {
+                        statusEl.classList.add('hidden');
+                        try {
+                            const res = JSON.parse(rawRes);
+                            if (res && res.success) {
+                                document.getElementById('in-thumbnail').value = res.url;
+                                
+                                // Update Header Preview
+                                const thumbImg = document.getElementById('user-thumbnail');
+                                const thumbIcon = document.getElementById('user-icon');
+                                thumbImg.src = res.url;
+                                thumbImg.classList.remove('hidden');
+                                thumbIcon.classList.add('hidden');
+                                
+                                Dialog.alert('Gambar berjaya dimuat naik ke Drive!');
+                            } else {
+                                Dialog.alert('Gagal muat naik: ' + res.message);
+                            }
+                        } catch (e) {
+                            Dialog.alert('Ralat Data: ' + e.message);
+                        }
+                    })
+                    .withFailureHandler(err => {
+                        statusEl.classList.add('hidden');
+                        Dialog.alert('Ralat Sistem: ' + err.message);
+                    })
+                    .api('UPLOAD_PROFILE_IMAGE', payload, getEmail());
             };
             reader.readAsDataURL(file);
         }
