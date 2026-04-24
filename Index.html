@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <title>StudyCore | Smart Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Archivo+Black&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: {
+                        pop: { purple: '#a855f7', yellow: '#facc15', cyan: '#06b6d4', dark: '#1e293b' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 2px solid #000; }
+        .neo-brutalism { box-shadow: 4px 4px 0px #000; transition: all 0.2s; }
+        .neo-brutalism:active { transform: translate(2px, 2px); box-shadow: 0px 0px 0px #000; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #custom-dialog-overlay { transition: opacity 0.3s; }
+        #custom-dialog-overlay.flex { animation: fadeIn 0.2s; }
+    </style>
+</head>
+<body class="bg-[#fefce8] text-pop-dark pb-32">
+
+    <header class="p-6 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="w-12 h-12 bg-white border-2 border-black rounded-2xl flex items-center justify-center neo-brutalism p-1 overflow-hidden">
+                <img src="https://api.dicebear.com/7.x/shapes/svg?seed=StudyCore&backgroundColor=a855f7,06b6d4" alt="Logo" class="w-full h-full object-contain">
+            </div>
+            <div>
+                <h1 class="text-2xl font-900 tracking-tighter" style="font-family: 'Archivo Black', sans-serif;">STUDY<span class="text-pop-purple">CORE</span></h1>
+                <p class="text-[10px] font-bold opacity-60 uppercase tracking-wider">Pelan Belajar Pintar Anda: Kunci A+!</p>
+            </div>
+        </div>
+        <div id="user-thumbnail-container" class="w-10 h-10 bg-pop-yellow border-2 border-black rounded-full overflow-hidden flex items-center justify-center neo-brutalism">
+            <img id="user-thumbnail" src="" class="w-full h-full object-cover hidden" onerror="this.classList.add('hidden'); document.getElementById('user-icon').classList.remove('hidden');">
+            <i id="user-icon" data-lucide="user" class="w-6 h-6"></i>
+        </div>
+    </header>
+
+    <main class="px-6 max-w-md mx-auto">
+        
+        <section id="view-dashboard" class="tab-content active">
+            <div class="bg-pop-cyan p-6 rounded-3xl border-2 border-black neo-brutalism mb-6">
+                <h2 class="text-white font-800 text-xl">Hi, Pejuang Ilmu! 🚀</h2>
+                <p class="text-white/80 text-sm">Sistem telah susun subjek ikut kelemahan anda.</p>
+                <div class="mt-4 flex gap-4">
+                    <div class="bg-white p-3 rounded-xl border-2 border-black flex-1">
+                        <span class="text-[10px] font-bold block">SUBJEK</span>
+                        <span id="stat-subjects" class="text-2xl font-800">0</span>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl border-2 border-black flex-1">
+                        <span class="text-[10px] font-bold block">DONE</span>
+                        <span id="stat-done" class="text-2xl font-800 text-green-600">0</span>
+                    </div>
+                </div>
+            </div>
+
+                <div class="flex items-center gap-2 mb-2">
+                    <i data-lucide="calendar" class="w-5 h-5"></i>
+                    <h4 class="font-800 text-lg">Jadual Belajar</h4>
+                </div>
+                
+                <div class="flex gap-2 overflow-x-auto pb-4 no-scrollbar mb-4" id="day-tabs">
+                    <!-- Tabs rendered dynamically -->
+                </div>
+
+                <div id="schedule-list" class="space-y-4"></div>
+        </section>
+
+        <section id="view-setup" class="tab-content">
+            <h3 class="font-800 text-2xl mb-4">Tetapan Belajar</h3>
+            
+            <!-- Sub-Tab Navigation -->
+            <div class="flex p-1 bg-gray-100 rounded-2xl border-2 border-black mb-6 neo-brutalism overflow-hidden">
+                <button onclick="switchSubTab('profil')" id="subbtn-profil" class="flex-1 py-2 rounded-xl font-800 text-[10px] transition-all bg-pop-purple text-white border-2 border-black neo-brutalism uppercase">👤 Profil Pelajar</button>
+                <button onclick="switchSubTab('subjek')" id="subbtn-subjek" class="flex-1 py-2 rounded-xl font-800 text-[10px] transition-all uppercase">📚 Pengurusan Subjek</button>
+            </div>
+
+            <div id="setup-sub-profil" class="setup-sub-content space-y-4">
+                <div class="bg-white p-5 rounded-2xl border-2 border-black neo-brutalism">
+                    <label class="block text-xs font-800 mb-2">EMAIL PENGGUNA</label>
+                    <input id="in-email" type="email" class="w-full border-2 border-black p-2 rounded-lg" placeholder="user@gmail.com" onchange="localStorage.setItem('userEmail', this.value); loadData();">
+                </div>
+                <div class="bg-white p-5 rounded-2xl border-2 border-black neo-brutalism">
+                    <label class="block text-xs font-800 mb-2">NAMA PENUH</label>
+                    <input id="in-name" type="text" class="w-full border-2 border-black p-2 rounded-lg" placeholder="Ali bin Abu">
+                </div>
+                <div class="bg-white p-5 rounded-2xl border-2 border-black neo-brutalism">
+                    <label class="block text-xs font-800 mb-2">THUMBNAIL URL (GAMBAR PROFIL)</label>
+                    <div class="flex gap-2">
+                        <input id="in-thumbnail" type="text" class="w-full border-2 border-black p-2 rounded-lg" placeholder="https://example.com/image.jpg">
+                        <button onclick="document.getElementById('in-file').click()" class="bg-pop-yellow p-2 rounded-lg border-2 border-black neo-brutalism flex items-center justify-center whitespace-nowrap px-4">
+                            <i data-lucide="upload" class="w-4 h-4 mr-2"></i> <span class="text-[10px] font-800">UPLOAD</span>
+                        </button>
+                    </div>
+                    <input id="in-file" type="file" class="hidden" accept="image/*" onchange="handleFileUpload(this)">
+                    <p id="upload-status" class="text-[8px] font-bold mt-1 opacity-60 italic hidden">Sedang memuat naik...</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border-2 border-black neo-brutalism">
+                        <label class="block text-[10px] font-800 mb-2">JAM/HARI</label>
+                        <input id="in-hours" type="number" class="w-full border-2 border-black p-2 rounded-lg" value="3">
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border-2 border-black neo-brutalism">
+                        <label class="block text-[10px] font-800 mb-2">SUBJEK/HARI</label>
+                        <input id="in-subjday" type="number" class="w-full border-2 border-black p-2 rounded-lg" value="2">
+                    </div>
+                </div>
+                <button onclick="saveSettings()" class="w-full bg-pop-purple text-white font-800 p-4 rounded-2xl border-2 border-black neo-brutalism">
+                    SIMPAN PROFIL
+                </button>
+            </div>
+
+            <div id="setup-sub-subjek" class="setup-sub-content hidden space-y-4">
+                <div class="flex gap-2">
+                    <button onclick="openSubjectModal()" class="flex-[2] bg-pop-cyan text-white font-800 p-4 rounded-2xl border-2 border-black neo-brutalism flex items-center justify-center gap-2 text-xs">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> TAMBAH SUBJEK
+                    </button>
+                    <button onclick="generateSchedule()" class="bg-black text-pop-yellow font-800 p-4 rounded-2xl border-2 border-black neo-brutalism flex items-center justify-center gap-2 text-[10px] whitespace-nowrap px-4">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i> JANA JADUAL
+                    </button>
+                </div>
+                <div id="subject-list" class="mt-4 space-y-2"></div>
+            </div>
+        </section>
+
+        <section id="view-performance" class="tab-content">
+            <div class="bg-pop-purple p-6 rounded-3xl border-2 border-black neo-brutalism mb-6 text-white">
+                <h2 class="font-800 text-xl">Analisis Prestasi 📊</h2>
+                <p class="text-white/80 text-sm">Pantau peningkatan markah dan trend anda.</p>
+            </div>
+            
+            <div id="performance-analysis" class="space-y-4 mb-6">
+                <!-- Smart Analysis summary will appear here -->
+            </div>
+
+            <h4 class="font-800 text-lg mb-4 flex items-center gap-2">
+                <i data-lucide="history" class="w-5 h-5"></i> Timeline Subjek
+            </h4>
+            <div id="performance-list" class="space-y-6">
+                <!-- Subject Timelines will appear here -->
+            </div>
+        </section>
+
+    </main>
+
+    <nav class="fixed bottom-6 left-6 right-6 bg-white border-4 border-black rounded-full p-2 flex justify-around neo-brutalism z-50">
+        <button onclick="switchTab('dashboard')" class="p-3 rounded-full hover:bg-pop-yellow transition">
+            <i data-lucide="layout-dashboard"></i>
+        </button>
+        <button onclick="switchTab('performance')" class="p-3 rounded-full hover:bg-pop-cyan transition">
+            <i data-lucide="trending-up"></i>
+        </button>
+        <button onclick="switchTab('setup')" class="p-3 rounded-full hover:bg-pop-purple hover:text-white transition">
+            <i data-lucide="settings"></i>
+        </button>
+    </nav>
+
+    <!-- Custom Dialog Modal -->
+    <div id="custom-dialog-overlay" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] hidden items-center justify-center p-6">
+        <div id="custom-dialog-box" class="bg-white border-4 border-black neo-brutalism w-full max-w-sm rounded-3xl p-6 overflow-hidden">
+            <h4 id="custom-dialog-title" class="font-900 text-xl mb-2" style="font-family: 'Archivo Black', sans-serif;">NOTIFIKASI</h4>
+            <p id="custom-dialog-message" class="text-sm font-bold opacity-70 mb-6"></p>
+            <div id="custom-dialog-input-container" class="mb-6 hidden">
+                <input id="custom-dialog-input" type="text" class="w-full border-2 border-black p-3 rounded-xl font-bold" placeholder="Taip di sini...">
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button id="custom-dialog-cancel" class="hidden px-4 py-2 border-2 border-black rounded-xl font-800 hover:bg-gray-100 transition uppercase text-xs">Batal</button>
+                <button id="custom-dialog-ok" class="bg-pop-purple text-white px-6 py-2 border-2 border-black rounded-xl font-800 neo-brutalism uppercase text-xs">Ya, Teruskan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Modal -->
+    <div id="subject-modal" class="fixed inset-0 bg-black/60 backdrop-blur-md z-[90] hidden items-center justify-center p-6">
+        <div class="bg-white border-4 border-black neo-brutalism w-full max-w-sm rounded-3xl p-6 overflow-hidden">
+            <h4 id="subject-modal-title" class="font-900 text-xl mb-6" style="font-family: 'Archivo Black', sans-serif;">TAMBAH SUBJEK</h4>
+            <input id="edit-subj-id" type="hidden">
+            <div class="space-y-4 mb-8">
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] font-800 uppercase opacity-60 ml-1">Nama Subjek</label>
+                    <input id="in-subjname" type="text" placeholder="Contoh: Matematik" class="w-full border-2 border-black p-3 rounded-xl font-bold">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-800 uppercase opacity-60 ml-1">Markah Mula</label>
+                        <input id="in-current" type="number" placeholder="0-100" class="w-full border-2 border-black p-3 rounded-xl font-bold">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-800 uppercase opacity-60 ml-1">Target Akhir</label>
+                        <input id="in-target" type="number" placeholder="0-100" class="w-full border-2 border-black p-3 rounded-xl font-bold">
+                    </div>
+                </div>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="closeSubjectModal()" class="flex-1 py-3 border-2 border-black rounded-xl font-800 hover:bg-gray-100 transition uppercase text-xs">Batal</button>
+                <button id="btn-add-subject" onclick="addSubject(this)" class="flex-[2] bg-pop-cyan text-white py-3 border-2 border-black rounded-xl font-800 neo-brutalism uppercase text-xs">Simpan Subjek</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const Dialog = {
+            overlay: null, title: null, message: null, inputContainer: null, input: null, okBtn: null, cancelBtn: null,
+            init() {
+                this.overlay = document.getElementById('custom-dialog-overlay');
+                this.title = document.getElementById('custom-dialog-title');
+                this.message = document.getElementById('custom-dialog-message');
+                this.inputContainer = document.getElementById('custom-dialog-input-container');
+                this.input = document.getElementById('custom-dialog-input');
+                this.okBtn = document.getElementById('custom-dialog-ok');
+                this.cancelBtn = document.getElementById('custom-dialog-cancel');
+            },
+            show(type, text, title = "StudyCore") {
+                this.init();
+                this.title.innerText = title.toUpperCase();
+                this.message.innerText = text;
+                this.inputContainer.classList.add('hidden');
+                this.cancelBtn.classList.add('hidden');
+                this.overlay.classList.remove('hidden');
+                this.overlay.classList.add('flex');
+                
+                if (type === 'confirm' || type === 'prompt') this.cancelBtn.classList.remove('hidden');
+                if (type === 'prompt') {
+                    this.inputContainer.classList.remove('hidden');
+                    this.input.value = "";
+                    setTimeout(() => this.input.focus(), 100);
+                }
+
+                return new Promise((resolve) => {
+                    this.okBtn.onclick = () => { this.close(); resolve(type === 'prompt' ? this.input.value : true); };
+                    this.cancelBtn.onclick = () => { this.close(); resolve(type === 'prompt' ? null : false); };
+                });
+            },
+            close() { this.overlay.classList.add('hidden'); this.overlay.classList.remove('flex'); },
+            alert(text, title) { return this.show('alert', text, title); },
+            confirm(text, title) { return this.show('confirm', text, title); },
+            prompt(text, title) { return this.show('prompt', text, title); }
+        };
+
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyOpWhUqHjK8W3pOKgtKlshAhBiWRuqfEvvEDFqDgVSGWHVszp1XA180sH7WXB9brV5YA/exec";
+
+        async function runBackend(action, payload = null) {
+            const email = getEmail();
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action, payload, email }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } // GAS handles POST better with text/plain to avoid preflight
+                });
+                const res = await response.json();
+                return res;
+            } catch (err) {
+                console.error("API Error:", err);
+                return { success: false, message: "Ralat sambungan API: " + err.message };
+            }
+        }
+
+        let GD = {}; 
+        const DAYS_LIST = ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu', 'Ahad'];
+        const dayNames = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
+        let selectedDay = dayNames[new Date().getDay()];
+
+        window.onload = () => {
+            let email = localStorage.getItem('userEmail');
+            if (email) {
+                document.getElementById('in-email').value = email;
+            }
+            lucide.createIcons();
+            loadData();
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + tabId).classList.add('active');
+        }
+
+        function switchSubTab(subId) {
+            document.querySelectorAll('.setup-sub-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('setup-sub-' + subId).classList.remove('hidden');
+            
+            // Update button styles
+            const profilBtn = document.getElementById('subbtn-profil');
+            const subjekBtn = document.getElementById('subbtn-subjek');
+            
+            if (subId === 'profil') {
+                profilBtn.classList.add('bg-pop-purple', 'text-white', 'border-2', 'border-black', 'neo-brutalism');
+                subjekBtn.classList.remove('bg-pop-purple', 'text-white', 'border-2', 'border-black', 'neo-brutalism');
+            } else {
+                subjekBtn.classList.add('bg-pop-cyan', 'text-white', 'border-2', 'border-black', 'neo-brutalism');
+                profilBtn.classList.remove('bg-pop-purple', 'text-white', 'border-2', 'border-black', 'neo-brutalism');
+            }
+        }
+
+        function getEmail() {
+            return document.getElementById('in-email').value.trim().toLowerCase();
+        }
+
+        async function loadData() {
+            const email = getEmail();
+            if (!email) return;
+            
+            const res = await runBackend('GET_USER_DATA');
+            if (res && res.success) {
+                GD = res.data;
+                renderDashboard();
+            } else {
+                Dialog.alert('Gagal memuat data: ' + (res ? res.message : 'Unknown error'));
+            }
+        }
+
+        function renderDashboard() {
+            if (!GD) return;
+
+            const subjects = (GD.SUBJECTS || []).slice(1);
+            const schedule = (GD.SCHEDULES || []).slice(1);
+            const user = (GD.USERS || []).slice(1)[0]; 
+            
+            if (user) {
+                document.getElementById('in-name').value = user[2] || "";
+                document.getElementById('in-hours').value = user[3] || 3;
+                document.getElementById('in-subjday').value = user[4] || 2;
+                
+                let thumbUrl = user[5] || "";
+                // Auto-fix for old Drive URL formats to ensure reliability
+                if (thumbUrl.includes('drive.google.com/uc')) {
+                    const fileId = thumbUrl.split('id=')[1];
+                    thumbUrl = "https://drive.google.com/thumbnail?id=" + fileId + "&sz=w500";
+                }
+                document.getElementById('in-thumbnail').value = thumbUrl;
+                
+                // Update Header Thumbnail
+                const thumbImg = document.getElementById('user-thumbnail');
+                const thumbIcon = document.getElementById('user-icon');
+                if (thumbUrl) {
+                    thumbImg.src = thumbUrl;
+                    thumbImg.classList.remove('hidden');
+                    thumbIcon.classList.add('hidden');
+                } else {
+                    thumbImg.classList.add('hidden');
+                    thumbIcon.classList.remove('hidden');
+                }
+            }
+
+            document.getElementById('stat-subjects').innerText = subjects.length;
+            document.getElementById('stat-done').innerText = schedule.filter(s => s[5] === 'DONE').length;
+
+            // Render Day Tabs
+            const tabContainer = document.getElementById('day-tabs');
+            if (tabContainer) {
+                tabContainer.innerHTML = DAYS_LIST.map(d => {
+                    let short = d.substring(0, 3).toUpperCase();
+                    if (d === 'Ahad') short = 'AHD';
+                    return `
+                        <button onclick="switchDay('${d}')" class="flex-1 py-2 rounded-xl border-2 border-black font-800 text-[10px] transition-all ${selectedDay === d ? 'bg-pop-yellow neo-brutalism translate-x-[-1px] translate-y-[-1px]' : 'bg-white opacity-30'}">
+                            ${short}
+                        </button>
+                    `;
+                }).join('');
+            }
+
+            // Render Schedule
+            const schedList = document.getElementById('schedule-list');
+            if (schedList) {
+                const daySchedule = schedule.filter(s => s[3] === selectedDay);
+                if (daySchedule.length === 0) {
+                    schedList.innerHTML = `
+                        <div class="p-8 text-center border-2 border-dashed border-black rounded-2xl bg-gray-50/50">
+                            <i data-lucide="coffee" class="w-8 h-8 mx-auto mb-2 opacity-30"></i>
+                            <p class="text-xs font-bold opacity-40 uppercase">Tiada aktiviti untuk ${selectedDay}</p>
+                        </div>
+                    `;
+                } else {
+                    schedList.innerHTML = "";
+                    daySchedule.forEach(s => {
+                        const subject = subjects.find(sub => sub[0] === s[2]);
+                        const subjName = subject ? subject[2] : 'Unknown';
+                        const isDone = s[5] === 'DONE';
+                        
+                        schedList.innerHTML += `
+                            <div class="bg-white p-4 rounded-2xl border-2 border-black neo-brutalism flex justify-between items-center transition-all ${isDone ? 'opacity-50 grayscale' : ''}">
+                                <div>
+                                    <p class="text-[10px] font-800 text-pop-purple uppercase mb-1">${s[3]}</p>
+                                    <h5 class="font-800 text-md text-pop-dark">${subjName}</h5>
+                                    <p class="text-[10px] font-bold opacity-60">${s[4]} Minit Study</p>
+                                </div>
+                                <div onclick="markDone('${s[0]}', this)" class="w-12 h-12 rounded-xl border-2 border-black flex items-center justify-center cursor-pointer transition-all ${isDone ? 'bg-pop-yellow' : 'bg-white hover:bg-gray-50'}">
+                                    ${isDone ? '<i data-lucide="check" class="w-6 h-6 text-black"></i>' : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            }
+
+            // Render Subject List in Setup Tab
+            const subjList = document.getElementById('subject-list');
+            if (subjList) {
+                if (subjects.length === 0) {
+                    subjList.innerHTML = `
+                        <div class="p-6 text-center text-xs opacity-50 border-2 border-dashed border-black rounded-2xl bg-gray-50/50">
+                            Tiada subjek berdaftar. Sila tambah subjek di atas.
+                        </div>
+                    `;
+                } else {
+                    subjList.innerHTML = '<p class="text-xs font-800 opacity-50 uppercase mb-2">Senarai Subjek Berdaftar</p>';
+                    subjects.forEach(s => {
+                        const gapVal = s[5];
+                        const gapDisplay = (gapVal === null || gapVal === undefined || isNaN(gapVal)) ? 'N/A' : gapVal;
+                        subjList.innerHTML += `
+                            <div class="bg-white p-4 rounded-2xl border-2 border-black neo-brutalism flex justify-between items-center mb-3">
+                                <div class="flex-1">
+                                    <h5 class="font-800 text-md text-pop-dark">${s[2]}</h5>
+                                    <div class="flex gap-2 mt-1">
+                                        <span class="bg-pop-yellow/20 text-[10px] px-2 py-0.5 rounded-full border border-pop-yellow/40 font-bold text-pop-dark">Mula: ${s[3]}</span>
+                                        <span class="bg-pop-cyan/20 text-[10px] px-2 py-0.5 rounded-full border border-pop-cyan/40 font-bold text-pop-dark">Target: ${s[4]}</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-pop-purple text-white px-3 py-1 rounded-xl text-xs font-800 border-2 border-black neo-brutalism">
+                                        GAP: ${gapDisplay}
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <button onclick="openScoreUpdate('${s[0]}', '${s[2].replace(/'/g, "\\'")}')" class="p-1 hover:bg-green-50 rounded border border-black/10" title="Kemaskini Markah">
+                                            <i data-lucide="plus-circle" class="w-4 h-4 text-green-600"></i>
+                                        </button>
+                                        <button onclick="startEditSubject('${s[0]}', '${s[2].replace(/'/g, "\\'")}', '${s[3]}', '${s[4]}')" class="p-1 hover:bg-gray-100 rounded border border-black/10">
+                                            <i data-lucide="pencil" class="w-4 h-4 text-gray-600"></i>
+                                        </button>
+                                        <button onclick="confirmDeleteSubject('${s[0]}', '${s[2].replace(/'/g, "\\'")}', this)" class="p-1 hover:bg-red-50 rounded border border-black/10">
+                                            <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            }
+            lucide.createIcons();
+            renderPerformance();
+        }
+
+        function renderPerformance() {
+            const subjects = (GD.SUBJECTS || []).slice(1);
+            const history = (GD.SCORE_HISTORY || []).slice(1);
+            const perfList = document.getElementById('performance-list');
+            const analysisContainer = document.getElementById('performance-analysis');
+            
+            if (!perfList || !analysisContainer) return;
+
+            if (subjects.length === 0) {
+                perfList.innerHTML = '<p class="text-center py-10 opacity-50">Sila tambah subjek dahulu untuk melihat analisis.</p>';
+                analysisContainer.innerHTML = "";
+                return;
+            }
+
+            // Calculate Overall Progress
+            let totalImprovement = 0;
+            let subjsWithProgress = 0;
+            let topSubject = { name: '-', improvement: -1 };
+
+            const subjectTimelines = subjects.map(s => {
+                const subjId = s[0];
+                const subjName = s[2];
+                const startingScore = parseInt(s[3]);
+                const targetScore = parseInt(s[4]);
+                
+                const subjHistory = history
+                    .filter(h => h[2] === subjId)
+                    .sort((a, b) => new Date(a[4]) - new Date(b[4]));
+                
+                const latestScore = subjHistory.length > 0 ? parseInt(subjHistory[subjHistory.length - 1][3]) : startingScore;
+                const improvement = latestScore - startingScore;
+                
+                if (improvement > 0) {
+                    totalImprovement += improvement;
+                    subjsWithProgress++;
+                    if (improvement > topSubject.improvement) {
+                        topSubject = { name: subjName, improvement: improvement };
+                    }
+                }
+
+                const progressPercent = Math.min(100, Math.max(0, ((latestScore - startingScore) / (targetScore - startingScore)) * 100)) || 0;
+
+                return `
+                    <div class="bg-white p-5 rounded-3xl border-2 border-black neo-brutalism">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h5 class="font-800 text-lg">${subjName}</h5>
+                                <p class="text-[10px] font-bold opacity-60 uppercase">Target: ${targetScore}%</p>
+                            </div>
+                            <div class="bg-pop-yellow px-3 py-1 rounded-full border-2 border-black text-[10px] font-800">
+                                +${improvement} MATA
+                            </div>
+                        </div>
+                        
+                        <div class="relative h-4 bg-gray-100 border-2 border-black rounded-full overflow-hidden mb-4">
+                            <div class="absolute top-0 left-0 h-full bg-pop-cyan transition-all duration-1000" style="width: ${progressPercent}%"></div>
+                        </div>
+                        
+                        <div class="flex justify-between text-[10px] font-800 mb-4">
+                            <span>Mula: ${startingScore}%</span>
+                            <span class="text-pop-purple">Sekarang: ${latestScore}%</span>
+                        </div>
+
+                        <div class="space-y-2 border-t-2 border-black border-dashed pt-4">
+                            <p class="text-[10px] font-800 opacity-40 uppercase mb-2">Log Timeline</p>
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+                                <span class="text-[10px] font-bold opacity-60">${new Date(s[6]).toLocaleDateString()}</span>
+                                <span class="text-[10px] font-800">Mula Belajar (${startingScore}%)</span>
+                            </div>
+                            ${subjHistory.map(h => `
+                                <div class="flex items-center gap-2">
+                                    <div class="w-2 h-2 rounded-full bg-pop-cyan"></div>
+                                    <span class="text-[10px] font-bold opacity-60">${new Date(h[4]).toLocaleDateString()}</span>
+                                    <span class="text-[10px] font-800">Ujian/Latihan (${h[3]}%)</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            perfList.innerHTML = subjectTimelines;
+
+            // Render Analysis Summary
+            analysisContainer.innerHTML = `
+                <div class="bg-white p-4 rounded-2xl border-2 border-black neo-brutalism flex items-center gap-4">
+                    <div class="w-12 h-12 bg-pop-yellow rounded-xl border-2 border-black flex items-center justify-center">
+                        <i data-lucide="award" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-800 opacity-60 uppercase">Peningkatan Terbaik</p>
+                        <h6 class="font-800 text-md">${topSubject.name} (+${topSubject.improvement > -1 ? topSubject.improvement : 0})</h6>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border-2 border-black neo-brutalism flex items-center gap-4">
+                    <div class="w-12 h-12 bg-pop-cyan rounded-xl border-2 border-black flex items-center justify-center">
+                        <i data-lucide="zap" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-800 opacity-60 uppercase">Purata Kemajuan</p>
+                        <h6 class="font-800 text-md">${subjsWithProgress > 0 ? (totalImprovement/subjsWithProgress).toFixed(1) : 0} Mata / Subjek</h6>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        async function openScoreUpdate(id, name) {
+            const score = await Dialog.prompt(`Masukkan markah baru untuk ${name} (0-100):`);
+            if (score === null || score === "") return;
+            
+            const numScore = parseInt(score);
+            if (isNaN(numScore) || numScore < 0 || numScore > 100) {
+                Dialog.alert('Sila masukkan nombor antara 0 hingga 100!');
+                return;
+            }
+
+            const res = await runBackend('UPDATE_SUBJECT_SCORE', { subjId: id, score: numScore });
+            if (res && res.success) {
+                Dialog.alert('Markah berjaya dikemaskini!');
+                loadData();
+            } else {
+                Dialog.alert('Gagal kemaskini: ' + (res ? res.message : 'Ralat API'));
+            }
+        }
+
+        async function saveSettings() {
+            const email = getEmail();
+            if (!email) {
+                Dialog.alert('Sila masukkan email dahulu!');
+                return;
+            }
+            localStorage.setItem('userEmail', email);
+
+            const payload = {
+                name: document.getElementById('in-name').value,
+                hours: document.getElementById('in-hours').value,
+                subjects: document.getElementById('in-subjday').value,
+                thumbnail: document.getElementById('in-thumbnail').value
+            };
+            
+            const res = await runBackend('SAVE_SETTINGS', payload);
+            if (res && res.success) {
+                Dialog.alert('Profil Disimpan!');
+            } else {
+                Dialog.alert('Gagal simpan profil: ' + (res ? res.message : 'Ralat API'));
+            }
+        }
+
+        async function addSubject(btn) {
+            if (!btn) btn = document.getElementById('btn-add-subject');
+            const originalText = btn.innerText;
+            
+            const nameEl = document.getElementById('in-subjname');
+            const currentEl = document.getElementById('in-current');
+            const targetEl = document.getElementById('in-target');
+            const editIdEl = document.getElementById('edit-subj-id');
+
+            const payload = {
+                id: editIdEl.value,
+                name: nameEl.value.trim(),
+                current: currentEl.value,
+                target: targetEl.value
+            };
+
+            if (!payload.name || !payload.current || !payload.target) {
+                Dialog.alert('Sila lengkapkan nama subjek, markah awal dan target!');
+                return;
+            }
+
+            btn.innerText = "SEDANG SIMPAN...";
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+
+            const action = payload.id ? 'EDIT_SUBJECT' : 'ADD_SUBJECT';
+
+            const res = await runBackend(action, payload);
+            btn.innerText = originalText;
+            btn.disabled = false;
+            btn.classList.remove('opacity-50');
+            
+            if (res && res.success) {
+                nameEl.value = "";
+                currentEl.value = "";
+                targetEl.value = "";
+                editIdEl.value = "";
+                closeSubjectModal();
+                loadData();
+            } else {
+                Dialog.alert('Gagal simpan subjek: ' + (res ? res.message : 'Ralat API'));
+            }
+        }
+
+        function startEditSubject(id, name, current, target) {
+            document.getElementById('edit-subj-id').value = id;
+            document.getElementById('in-subjname').value = name;
+            document.getElementById('in-current').value = current;
+            document.getElementById('in-target').value = target;
+            
+            openSubjectModal(true);
+        }
+
+        function cancelEdit() {
+            closeSubjectModal();
+        }
+
+        function openSubjectModal(isEdit = false) {
+            const modal = document.getElementById('subject-modal');
+            const title = document.getElementById('subject-modal-title');
+            const btn = document.getElementById('btn-add-subject');
+            
+            if (!isEdit) {
+                document.getElementById('edit-subj-id').value = "";
+                document.getElementById('in-subjname').value = "";
+                document.getElementById('in-current').value = "";
+                document.getElementById('in-target').value = "";
+                title.innerText = "TAMBAH SUBJEK";
+                btn.innerText = "SIMPAN SUBJEK";
+            }
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeSubjectModal() {
+            const modal = document.getElementById('subject-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function confirmDeleteSubject(id, name, btn) {
+            Dialog.confirm(`Adakah anda pasti ingin menghapus subjek "${name}"? Semua jadual berkaitan subjek ini juga akan dipadam.`).then(async confirmed => {
+                if (!confirmed) return;
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-red-500"></i>';
+                    lucide.createIcons();
+                }
+                
+                const res = await runBackend('DELETE_SUBJECT', {id: id});
+                if (res && res.success) {
+                    loadData();
+                } else {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>';
+                        lucide.createIcons();
+                    }
+                    Dialog.alert('Gagal hapus subjek: ' + (res ? res.message : 'Ralat API'));
+                }
+            });
+        }
+
+        async function generateSchedule() {
+            const email = getEmail();
+            if (!email) return Dialog.alert('Sila masukkan email!');
+            
+            const res = await runBackend('GENERATE_SCHEDULE');
+            if (res && res.success) {
+                Dialog.alert(res.message);
+                loadData();
+                switchTab('dashboard');
+            } else {
+                Dialog.alert('Gagal jana jadual: ' + (res ? res.message : 'Ralat API'));
+            }
+        }
+
+        function switchDay(day) {
+            selectedDay = day;
+            renderDashboard();
+        }
+
+        async function markDone(id, btn) {
+            if (btn && !btn.innerHTML.includes('check')) {
+                btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>';
+                lucide.createIcons();
+            }
+            const res = await runBackend('UPDATE_STATUS', {id: id});
+            if (res && res.success) {
+                loadData();
+            }
+        }
+
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            const statusEl = document.getElementById('upload-status');
+            
+            statusEl.classList.remove('hidden');
+            statusEl.innerText = "Sedang memuat naik...";
+            
+            reader.onload = async function(e) {
+                const base64 = e.target.result;
+                const payload = {
+                    base64: base64,
+                    fileName: file.name,
+                    mimeType: file.type
+                };
+
+                const res = await runBackend('UPLOAD_PROFILE_IMAGE', payload);
+                statusEl.classList.add('hidden');
+                if (res && res.success) {
+                    document.getElementById('in-thumbnail').value = res.url;
+                    
+                    // Update Header Preview
+                    const thumbImg = document.getElementById('user-thumbnail');
+                    const thumbIcon = document.getElementById('user-icon');
+                    thumbImg.src = res.url;
+                    thumbImg.classList.remove('hidden');
+                    thumbIcon.classList.add('hidden');
+                    
+                    Dialog.alert('Gambar berjaya dimuat naik ke Drive!');
+                } else {
+                    Dialog.alert('Gagal muat naik: ' + (res ? res.message : 'Ralat API'));
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
