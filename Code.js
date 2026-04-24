@@ -4,7 +4,18 @@
  */
 
 function doGet(e) {
-  return HtmlService.createTemplateFromFile('Index').evaluate()
+  // Handle API requests via GET (for JSONP/CORS bypass)
+  if (e.parameter.action) {
+    const result = api(e.parameter.action, JSON.parse(e.parameter.payload || "null"), e.parameter.email);
+    if (e.parameter.callback) {
+      return ContentService.createTextOutput(e.parameter.callback + "(" + result + ")")
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return ContentService.createTextOutput(result)
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  return HtmlService.createTemplateFromFile('index').evaluate()
     .setTitle('StudyCore')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);

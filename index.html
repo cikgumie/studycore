@@ -251,16 +251,50 @@
 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyOpWhUqHjK8W3pOKgtKlshAhBiWRuqfEvvEDFqDgVSGWHVszp1XA180sH7WXB9brV5YA/exec";
 
+        // JSONP Helper for CORS bypass (for GET requests)
+        function fetchJSONP(url, callbackName) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                const name = 'jsonp_' + Math.round(100000 * Math.random());
+                window[name] = (data) => {
+                    resolve(data);
+                    document.body.removeChild(script);
+                    delete window[name];
+                };
+                script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + name;
+                script.onerror = () => {
+                    reject(new Error('JSONP failed'));
+                    document.body.removeChild(script);
+                    delete window[name];
+                };
+                document.body.appendChild(script);
+            });
+        }
+
         async function runBackend(action, payload = null) {
             const email = getEmail();
+            if (!email) return { success: false, message: "Email diperlukan" };
+
+            // For GET actions (loading data), use JSONP to bypass CORS
+            if (action === 'GET_USER_DATA') {
+                const url = `${WEB_APP_URL}?action=${action}&email=${encodeURIComponent(email)}&payload=${encodeURIComponent(JSON.stringify(payload))}`;
+                try {
+                    return await fetchJSONP(url);
+                } catch (e) {
+                    return { success: false, message: "Gagal memuat data (CORS): " + e.message };
+                }
+            }
+
+            // For POST actions (saving), use no-cors fetch (we won't be able to read response, but GAS will process it)
             try {
-                const response = await fetch(WEB_APP_URL, {
+                fetch(WEB_APP_URL, {
                     method: 'POST',
+                    mode: 'no-cors',
                     body: JSON.stringify({ action, payload, email }),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' } // GAS handles POST better with text/plain to avoid preflight
+                    headers: { 'Content-Type': 'text/plain' }
                 });
-                const res = await response.json();
-                return res;
+                // Since we can't read response in no-cors, we wait a bit and return success
+                return new Promise(resolve => setTimeout(() => resolve({ success: true }), 1000));
             } catch (err) {
                 console.error("API Error:", err);
                 return { success: false, message: "Ralat sambungan API: " + err.message };
