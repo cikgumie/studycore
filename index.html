@@ -276,9 +276,13 @@
             let email = localStorage.getItem('userEmail');
             if (email) {
                 document.getElementById('in-email').value = email;
+                lucide.createIcons();
+                loadData();
+            } else {
+                lucide.createIcons();
+                switchTab('setup');
+                Dialog.alert('Selamat Datang ke StudyCore! Sila masukkan email Google anda di bahagian Tetapan untuk memuatkan data anda.', 'StudyCore');
             }
-            lucide.createIcons();
-            loadData();
         };
 
         function switchTab(tabId) {
