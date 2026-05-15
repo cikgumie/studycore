@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyCore | Dokumentasi Rasmi & Inovasi</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- AOS Animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'pop-yellow': '#facc15',
+                        'pop-purple': '#a855f7',
+                        'pop-cyan': '#06b6d4',
+                        'pop-dark': '#18181b',
+                    },
+                    fontFamily: {
+                        'archivo': ['"Archivo Black"', 'sans-serif'],
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fefce8; color: #18181b; overflow-x: hidden; }
+        .neo-brutalism { box-shadow: 8px 8px 0px 0px rgba(0,0,0,1); transition: all 0.2s ease; }
+        .neo-brutalism:hover { transform: translate(-4px, -4px); box-shadow: 12px 12px 0px 0px rgba(0,0,0,1); }
+        .font-900 { font-weight: 900; }
+        .section-title { font-family: 'Archivo Black', sans-serif; text-transform: uppercase; line-height: 0.9; }
+        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 3px solid #000; }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        .float-anim { animation: float 4s ease-in-out infinite; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-content {
+            background: white;
+            border: 6px solid black;
+            border-radius: 40px;
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            position: relative;
+            box-shadow: 20px 20px 0px rgba(0,0,0,1);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            background: black;
+            color: white;
+            padding: 8px;
+            border-radius: 12px;
+            transition: transform 0.2s;
+        }
+        .close-modal:hover { transform: scale(1.1) rotate(90deg); }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #000; border-radius: 10px; }
+    </style>
+</head>
+<body class="custom-scrollbar">
+
+    <!-- Hero Section -->
+    <header class="min-h-screen flex flex-col items-center justify-center relative p-6 overflow-hidden">
+        <div class="absolute top-20 left-10 w-32 h-32 bg-pop-purple rounded-full blur-3xl opacity-20 animate-pulse"></div>
+        <div class="absolute bottom-20 right-10 w-48 h-48 bg-pop-cyan rounded-full blur-3xl opacity-20 animate-pulse"></div>
+        
+        <div class="z-10 max-w-7xl w-full grid lg:grid-cols-2 gap-20 lg:gap-32 items-center">
+            <div data-aos="fade-right">
+                <div class="inline-block bg-black text-pop-yellow px-6 py-2 rounded-full mb-6 neo-brutalism transform -rotate-2">
+                    <span class="text-xs font-900 tracking-widest uppercase">Inovasi Planner Pendidikan 2024</span>
+                </div>
+                <h1 class="section-title text-6xl md:text-8xl lg:text-9xl mb-6 tracking-tighter">
+                    STUDY<span class="text-pop-purple">CORE</span>
+                </h1>
+                <p class="text-xl font-bold mb-10 opacity-80 leading-relaxed max-w-lg">
+                    Platform pengurusan masa pintar yang mengintegrasikan <span class="bg-pop-yellow px-2 border-2 border-black">Algoritma Penjadualan AI</span> dan <span class="bg-pop-cyan px-2 border-2 border-black">Teknik Pomodoro</span> untuk kecemerlangan akademik murid.
+                </p>
+                
+                <div class="flex flex-wrap gap-4">
+                    <a href="#features" class="bg-pop-purple text-white px-8 py-4 rounded-2xl border-4 border-black font-900 neo-brutalism uppercase tracking-tight flex items-center gap-3 text-sm">
+                        <i data-lucide="zap" class="w-5 h-5"></i> Teroka Fungsi
+                    </a>
+                    <div class="bg-white text-black px-8 py-4 rounded-2xl border-4 border-black font-900 neo-brutalism uppercase tracking-tight flex items-center gap-3 cursor-default text-sm">
+                        <i data-lucide="award" class="w-5 h-5 text-pop-yellow"></i> Competition Ready
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative flex justify-center" data-aos="fade-left" data-aos-delay="200" style="perspective: 1000px;">
+                <!-- 3D Mobile Mockup -->
+                <div class="relative w-[300px] h-[600px] bg-black rounded-[3.5rem] border-[12px] border-black neo-brutalism overflow-hidden shadow-2xl transition-all duration-500 hover:rotate-0" style="transform: rotateY(-20deg) rotateX(10deg) rotateZ(5deg);">
+                    <!-- Notch -->
+                    <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-7 bg-black rounded-b-3xl z-20"></div>
+                    <!-- Screen -->
+                    <div class="absolute inset-0 bg-white overflow-hidden">
+                        <img src="assets/screenshot.png" alt="StudyCore Dashboard" class="w-full h-full object-cover">
+                    </div>
+                    <!-- Glossy Effect -->
+                    <div class="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none z-30"></div>
+                </div>
+                <!-- Decorative Elements -->
+                <div class="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-pop-purple/20 rounded-full blur-[100px] animate-pulse"></div>
+                <div class="absolute -z-10 bottom-0 right-0 w-64 h-64 bg-pop-cyan/20 rounded-full blur-[80px]"></div>
+            </div>
+        </div>
+
+        <div class="mt-12 float-anim lg:absolute lg:bottom-10">
+            <i data-lucide="chevron-down" class="w-10 h-10 opacity-30"></i>
+        </div>
+    </header>
+
+    <!-- Core Philosophy Section -->
+    <section class="py-24 px-6 bg-pop-dark text-white relative overflow-hidden" id="about">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div data-aos="fade-right">
+                    <h2 class="section-title text-5xl md:text-7xl mb-8 leading-none">
+                        MENGAPA <br><span class="text-pop-yellow">STUDYCORE?</span>
+                    </h2>
+                    <p class="text-lg opacity-80 mb-8 leading-relaxed">
+                        Kebanyakan murid menghadapi masalah menguruskan masa bukan kerana mereka malas, tetapi kerana mereka tidak tahu subjek mana yang perlu diberi keutamaan. StudyCore hadir sebagai penyelesaian yang membuang segala kerumitan (friction) dalam belajar.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-4">
+                            <div class="bg-pop-cyan p-2 border-2 border-black text-black">
+                                <i data-lucide="check" class="w-5 h-5"></i>
+                            </div>
+                            <span>Automasi penuh penjadualan subjek mingguan.</span>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="bg-pop-purple p-2 border-2 border-black text-black">
+                                <i data-lucide="check" class="w-5 h-5"></i>
+                            </div>
+                            <span>Fokus kepada subjek yang mempunyai "Markah Gap" tertinggi.</span>
+                        </li>
+                        <li class="flex items-start gap-4">
+                            <div class="bg-pop-yellow p-2 border-2 border-black text-black">
+                                <i data-lucide="check" class="w-5 h-5"></i>
+                            </div>
+                            <span>Integrasi teknik psikologi belajar Pomodoro.</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="relative" data-aos="fade-left">
+                    <div class="bg-white border-4 border-black p-8 rounded-[40px] neo-brutalism text-black rotate-3">
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="w-12 h-12 bg-pop-yellow rounded-full border-2 border-black"></div>
+                            <div class="h-4 w-32 bg-black/10 rounded-full"></div>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="h-10 w-full bg-pop-purple/20 rounded-xl border-2 border-black border-dashed"></div>
+                            <div class="h-10 w-full bg-pop-cyan/20 rounded-xl border-2 border-black border-dashed"></div>
+                            <div class="h-10 w-4/5 bg-pop-yellow/20 rounded-xl border-2 border-black border-dashed"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Exclusive Interfaces Section -->
+    <section class="py-24 px-6 bg-white overflow-hidden" id="interfaces">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="section-title text-5xl md:text-7xl mb-4">ANTARAMUKA <span class="text-pop-cyan">EKSKLUSIF</span></h2>
+                <p class="text-xl font-bold opacity-60">Satu aplikasi, pelbagai solusi untuk fokus anda.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-12 lg:gap-20 items-center">
+                <!-- Mockup 1: Dashboard -->
+                <div class="flex flex-col items-center" data-aos="fade-right" data-aos-delay="100">
+                    <div class="relative w-[260px] h-[520px] bg-black rounded-[3rem] border-[10px] border-black neo-brutalism overflow-hidden transition-all duration-500 hover:rotate-0" style="perspective: 1000px; transform: rotateY(15deg);">
+                        <div class="absolute inset-0 bg-white overflow-hidden">
+                            <img src="assets/screenshot.png" alt="Dashboard" class="w-full h-full object-cover">
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none z-30"></div>
+                    </div>
+                    <p class="mt-8 font-900 text-lg uppercase tracking-widest opacity-40">01. Dashboard</p>
+                </div>
+
+                <!-- Mockup 2: Timer -->
+                <div class="flex flex-col items-center" data-aos="fade-up" data-aos-delay="200">
+                    <div class="relative w-[280px] h-[560px] bg-black rounded-[3rem] border-[10px] border-black neo-brutalism overflow-hidden transition-all duration-500 hover:scale-105 z-10 shadow-[0_20px_50px_rgba(168,85,247,0.3)]">
+                        <div class="absolute inset-0 bg-white overflow-hidden">
+                            <img src="assets/timer.png" alt="Pomodoro Timer" class="w-full h-full object-cover">
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none z-30"></div>
+                    </div>
+                    <p class="mt-8 font-900 text-xl uppercase tracking-widest text-pop-purple">02. Pomodoro</p>
+                </div>
+
+                <!-- Mockup 3: Performance -->
+                <div class="flex flex-col items-center" data-aos="fade-left" data-aos-delay="300">
+                    <div class="relative w-[260px] h-[520px] bg-black rounded-[3rem] border-[10px] border-black neo-brutalism overflow-hidden transition-all duration-500 hover:rotate-0" style="perspective: 1000px; transform: rotateY(-15deg);">
+                        <div class="absolute inset-0 bg-white overflow-hidden">
+                            <img src="assets/performance.png" alt="Performance Analysis" class="w-full h-full object-cover">
+                        </div>
+                        <div class="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none z-30"></div>
+                    </div>
+                    <p class="mt-8 font-900 text-lg uppercase tracking-widest opacity-40">03. Analisis</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Detailed Features Grid -->
+    <section class="py-24 px-6 max-w-7xl mx-auto" id="features">
+        <div class="text-center mb-20" data-aos="fade-up">
+            <h2 class="section-title text-5xl md:text-7xl mb-4">KEFUNGSIAN <span class="text-pop-purple">UTAMA</span></h2>
+            <p class="text-xl font-bold opacity-60">Direka khas untuk mobiliti dan kecekapan tinggi.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Feature 1: Daily Study Config -->
+            <div class="bg-white p-10 rounded-[35px] border-4 border-black neo-brutalism flex flex-col cursor-pointer transition-transform hover:-translate-y-2" 
+                 data-aos="fade-up" data-aos-delay="100" 
+                 onclick="openFeatureModal('daily')">
+                <div class="w-16 h-16 bg-pop-cyan rounded-2xl border-4 border-black flex items-center justify-center mb-8 -rotate-3">
+                    <i data-lucide="settings-2" class="w-8 h-8"></i>
+                </div>
+                <h3 class="font-900 text-2xl mb-4 uppercase">Tetapan Belajar Harian</h3>
+                <p class="opacity-70 leading-relaxed mb-6">Murid boleh menetapkan bilangan jam belajar yang berbeza bagi setiap hari (Isnin-Ahad). Memberi fleksibiliti mengikut jadual sekolah dan aktiviti kokurikulum.</p>
+                <div class="mt-auto flex items-center gap-2 font-900 text-sm text-pop-purple">
+                    <span>Lihat Huraian</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </div>
+
+            <!-- Feature 2: AI Smart Schedule -->
+            <div class="bg-white p-10 rounded-[35px] border-4 border-black neo-brutalism flex flex-col cursor-pointer transition-transform hover:-translate-y-2" 
+                 data-aos="fade-up" data-aos-delay="200"
+                 onclick="openFeatureModal('ai')">
+                <div class="w-16 h-16 bg-pop-purple text-white rounded-2xl border-4 border-black flex items-center justify-center mb-8 rotate-6">
+                    <i data-lucide="brain-circuit" class="w-8 h-8"></i>
+                </div>
+                <h3 class="font-900 text-2xl mb-4 uppercase">Jadual Pintar AI</h3>
+                <p class="opacity-70 leading-relaxed mb-6">Algoritma unik yang menyusun subjek berdasarkan "Gap Analysis". Subjek yang mempunyai jurang markah terbesar akan dijadualkan lebih kerap secara automatik.</p>
+                <div class="mt-auto flex items-center gap-2 font-900 text-sm text-pop-purple">
+                    <span>Lihat Huraian</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </div>
+
+            <!-- Feature 3: Pomodoro Integrated -->
+            <div class="bg-white p-10 rounded-[35px] border-4 border-black neo-brutalism flex flex-col cursor-pointer transition-transform hover:-translate-y-2" 
+                 data-aos="fade-up" data-aos-delay="300"
+                 onclick="openFeatureModal('pomodoro')">
+                <div class="w-16 h-16 bg-red-500 text-white rounded-2xl border-4 border-black flex items-center justify-center mb-8 -rotate-6">
+                    <i data-lucide="timer" class="w-8 h-8"></i>
+                </div>
+                <h3 class="font-900 text-2xl mb-4 uppercase">Teknik Fokus Pomodoro</h3>
+                <p class="opacity-70 leading-relaxed mb-6">Setiap subjek dilengkapi dengan timer 25:5. Murid tidak perlu aplikasi luar. Notifikasi dan bunyi akan memberitahu bila masa untuk fokus dan rehat.</p>
+                <div class="mt-auto flex items-center gap-2 font-900 text-sm text-pop-purple">
+                    <span>Lihat Huraian</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </div>
+
+            <!-- Feature 4: Performance Tracking -->
+            <div class="bg-white p-10 rounded-[35px] border-4 border-black neo-brutalism flex flex-col cursor-pointer transition-transform hover:-translate-y-2" 
+                 data-aos="fade-up" data-aos-delay="400"
+                 onclick="openFeatureModal('performance')">
+                <div class="w-16 h-16 bg-green-500 text-white rounded-2xl border-4 border-black flex items-center justify-center mb-8 rotate-3">
+                    <i data-lucide="trending-up" class="w-8 h-8"></i>
+                </div>
+                <h3 class="font-900 text-2xl mb-4 uppercase">Pantauan Prestasi</h3>
+                <p class="opacity-70 leading-relaxed mb-6">Pantau perkembangan subjek melalui visualisasi "Progress Bar" dan sejarah markah. Membolehkan murid melihat sejauh mana mereka telah berkembang.</p>
+                <div class="mt-auto flex items-center gap-2 font-900 text-sm text-pop-purple">
+                    <span>Lihat Huraian</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </div>
+
+            <!-- Feature 5: Neo-Brutalism UI -->
+            <div class="bg-pop-dark text-white p-10 rounded-[35px] border-4 border-black neo-brutalism flex flex-col cursor-pointer transition-transform hover:-translate-y-2" 
+                 data-aos="fade-up" data-aos-delay="500"
+                 onclick="openFeatureModal('ui')">
+                <div class="w-16 h-16 bg-white text-black rounded-2xl border-4 border-black flex items-center justify-center mb-8 -rotate-3">
+                    <i data-lucide="layout" class="w-8 h-8"></i>
+                </div>
+                <h3 class="font-900 text-2xl mb-4 uppercase">Reka Bentuk Moden</h3>
+                <p class="opacity-70 leading-relaxed mb-6">Antaramuka Neo-Brutalism yang bertenaga dan "high-contrast" menarik minat golongan remaja untuk terus menggunakan aplikasi setiap hari.</p>
+                <div class="mt-auto flex items-center gap-2 font-900 text-sm text-pop-yellow">
+                    <span>Lihat Huraian</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </div>
+
+            <!-- Feature 6: Cloud Sync & Accessibility -->
+            <div class="bg-white p-10 rounded-[35px] border-4 border-black neo-brutalism flex flex-col cursor-pointer transition-transform hover:-translate-y-2" 
+                 data-aos="fade-up" data-aos-delay="600"
+                 onclick="openFeatureModal('cloud')">
+                <div class="w-16 h-16 bg-pop-yellow rounded-2xl border-4 border-black flex items-center justify-center mb-8 rotate-3">
+                    <i data-lucide="cloud-lightning" class="w-8 h-8"></i>
+                </div>
+                <h3 class="font-900 text-2xl mb-4 uppercase">Akses Awan & Mobiliti</h3>
+                <p class="opacity-70 leading-relaxed mb-6">Data anda disimpan selamat di dalam awan (Cloud). Boleh diakses pada bila-bila masa melalui telefon pintar atau komputer tanpa perlu pemasangan.</p>
+                <div class="mt-auto flex items-center gap-2 font-900 text-sm text-pop-purple">
+                    <span>Lihat Huraian</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Roadmap / Future Section -->
+    <section class="py-24 px-6 max-w-5xl mx-auto">
+        <h2 class="section-title text-4xl md:text-6xl mb-12 text-center" data-aos="fade-up">HALATUJU <span class="text-pop-cyan">MASA DEPAN</span></h2>
+        
+        <div class="space-y-6">
+            <div class="bg-white p-8 rounded-3xl border-4 border-black neo-brutalism flex items-center gap-6" data-aos="fade-left">
+                <span class="font-archivo text-4xl text-pop-purple opacity-20">01</span>
+                <div>
+                    <h4 class="font-900 text-xl uppercase">Gamification Engine</h4>
+                    <p class="opacity-60 text-sm font-bold">Menambah sistem "XP" dan "Lencana" untuk meningkatkan motivasi murid belajar.</p>
+                </div>
+            </div>
+            <div class="bg-white p-8 rounded-3xl border-4 border-black neo-brutalism flex items-center gap-6" data-aos="fade-left" data-aos-delay="100">
+                <span class="font-archivo text-4xl text-pop-cyan opacity-20">02</span>
+                <div>
+                    <h4 class="font-900 text-xl uppercase">AI Tutor Integration</h4>
+                    <p class="opacity-60 text-sm font-bold">Menggunakan API OpenAI untuk memberikan ringkasan subjek secara automatik.</p>
+                </div>
+            </div>
+            <div class="bg-white p-8 rounded-3xl border-4 border-black neo-brutalism flex items-center gap-6" data-aos="fade-left" data-aos-delay="200">
+                <span class="font-archivo text-4xl text-pop-yellow opacity-20">03</span>
+                <div>
+                    <h4 class="font-900 text-xl uppercase">Parental Dashboard</h4>
+                    <p class="opacity-60 text-sm font-bold">Membenarkan ibu bapa memantau perkembangan anak-anak secara masa-nyata.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-20 bg-black text-white text-center">
+        <div class="mb-10">
+            <h2 class="section-title text-4xl md:text-6xl mb-4">STUDY<span class="text-pop-yellow">CORE</span></h2>
+            <p class="text-xs font-900 tracking-widest opacity-40 uppercase">Dicipta untuk Masa Depan Pendidikan</p>
+        </div>
+        <div class="flex justify-center gap-8 mb-12">
+            <i data-lucide="github" class="w-6 h-6 cursor-pointer hover:text-pop-yellow transition"></i>
+            <i data-lucide="twitter" class="w-6 h-6 cursor-pointer hover:text-pop-cyan transition"></i>
+            <i data-lucide="instagram" class="w-6 h-6 cursor-pointer hover:text-pop-purple transition"></i>
+        </div>
+        <p class="text-[10px] font-bold opacity-30">© 2024 STUDYCORE. HAK CIPTA TERPELIHARA.</p>
+    </footer>
+
+    <!-- Feature Modal -->
+    <div id="featureModal" class="modal-overlay" onclick="closeModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="close-modal" onclick="closeModal()">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </div>
+            <div id="modalIconContainer" class="w-20 h-20 rounded-2xl border-4 border-black flex items-center justify-center mb-8"></div>
+            <h2 id="modalTitle" class="font-900 text-4xl mb-6 uppercase tracking-tighter"></h2>
+            <div id="modalBody" class="text-lg font-bold opacity-80 leading-relaxed space-y-4"></div>
+            <button class="mt-10 w-full py-4 bg-black text-white rounded-2xl font-900 neo-brutalism uppercase" onclick="closeModal()">Tutup</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true,
+            offset: 100
+        });
+
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Modal Logic
+        const featureDetails = {
+            daily: {
+                title: "Tetapan Belajar Harian",
+                icon: "settings-2",
+                color: "bg-pop-cyan",
+                content: "Murid boleh menyesuaikan waktu belajar mengikut kapasiti mental harian. Contohnya, lebih banyak jam pada hari minggu dan waktu rehat yang lebih pada hari kokurikulum. Ini memastikan murid tidak mengalami 'burnout' atau keletihan melampau."
+            },
+            ai: {
+                title: "Jadual Pintar AI",
+                icon: "brain-circuit",
+                color: "bg-pop-purple",
+                textColor: "text-white",
+                content: "Algoritma kami menganalisis sejarah markah anda secara mendalam. Jika markah Matematik rendah (contoh: 20%), sistem akan memasukkan lebih banyak slot Matematik secara automatik berbanding subjek yang anda sudah kuasai. Fokus diberikan di mana ia paling diperlukan."
+            },
+            pomodoro: {
+                title: "Teknik Fokus Pomodoro",
+                icon: "timer",
+                color: "bg-red-500",
+                textColor: "text-white",
+                content: "Berdasarkan kajian sains kognitif, otak manusia fokus dengan baik dalam sela masa 25 minit. Sistem kami mengunci fokus anda dan memaksa rehat 5 minit untuk memastikan kesegaran mental sepanjang sesi belajar yang panjang."
+            },
+            performance: {
+                title: "Pantauan Prestasi",
+                icon: "trending-up",
+                color: "bg-green-500",
+                textColor: "text-white",
+                content: "Bukan sekadar nombor, sistem kami menukarkan data kepada 'Visual Progress Bar'. Anda boleh melihat graf trend markah anda meningkat dari minggu ke minggu, memberikan motivasi intrinsik untuk terus berusaha mencapai target A+."
+            },
+            ui: {
+                title: "Reka Bentuk Moden",
+                icon: "layout",
+                color: "bg-pop-dark",
+                textColor: "text-white",
+                content: "Menggunakan estetika Neo-Brutalism dengan warna kontra tinggi. Reka bentuk ini bukan sahaja menarik dari segi visual, tetapi juga memudahkan navigasi (UX) bagi memastikan murid tidak rasa bosan menggunakan aplikasi setiap hari."
+            },
+            cloud: {
+                title: "Akses Awan & Mobiliti",
+                icon: "cloud-lightning",
+                color: "bg-pop-yellow",
+                content: "Dibina atas infrastruktur Google Cloud yang stabil. Semua perubahan jadual anda di laptop akan terus muncul di telefon bimbit secara 'real-time'. Belajar di mana-mana sahaja, dari bas sekolah hingga ke perpustakaan awam."
+            }
+        };
+
+        function openFeatureModal(key) {
+            const data = featureDetails[key];
+            const modal = document.getElementById('featureModal');
+            const iconContainer = document.getElementById('modalIconContainer');
+            
+            document.getElementById('modalTitle').innerText = data.title;
+            document.getElementById('modalBody').innerText = data.content;
+            
+            iconContainer.className = `w-20 h-20 rounded-2xl border-4 border-black flex items-center justify-center mb-8 ${data.color} ${data.textColor || 'text-black'}`;
+            iconContainer.innerHTML = `<i data-lucide="${data.icon}" class="w-10 h-10"></i>`;
+            
+            lucide.createIcons();
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('featureModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                if (targetId === "#") return;
+                document.querySelector(targetId).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
